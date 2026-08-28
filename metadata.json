@@ -1,0 +1,6 @@
+{
+  "name": "Number Sense, Fractions & Proportions Studio",
+  "description": "High-performance, offline-first Progressive Web App by Sir Eugene Technologies featuring interactive Fraction Strips, Jump Number Line, 100-Grid Ratio Scaler, Fair-Share Kitchen, and Socratic Math Coach.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
