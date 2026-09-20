@@ -12,6 +12,15 @@ export interface StudentProfile {
 export type ActivityTopic = 
   | 'Fraction Equivalence'
   | 'Unlike Denominators'
+  | 'Fraction Addition'
+  | 'Fraction Subtraction'
+  | 'Fraction Multiplication'
+  | 'Fraction Division'
+  | 'Fraction Wall Scanner'
+  | 'Number Line Anchors'
+  | 'Fraction Comparator'
+  | '4-Track Builder'
+  | 'Missing Gap'
   | 'Number Line Jumps'
   | 'Decimal Rounding'
   | '100-Grid Percentages'
@@ -35,7 +44,7 @@ export interface ActivityLog {
   timestamp: string;
 }
 
-export type FractionDenominator = 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 12;
+export type FractionDenominator = 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 12 | 16;
 
 export interface FractionStripItem {
   id: string;

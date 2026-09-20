@@ -25,7 +25,7 @@ class SoundEngine {
     return this.isMuted;
   }
 
-  public play(type: 'success' | 'snap' | 'pop' | 'jump' | 'slice' | 'correct' | 'click' | 'round') {
+  public play(type: 'success' | 'snap' | 'pop' | 'jump' | 'slice' | 'correct' | 'click' | 'round' | 'pickup' | 'drop' | 'chime') {
     if (this.isMuted) return;
     try {
       this.init();
@@ -148,6 +148,62 @@ class SoundEngine {
           break;
         }
 
+        case 'pickup': {
+          // Subtle upward acoustic blip for lifting/grabbing tiles
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(560, now + 0.05);
+
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.055);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.06);
+          break;
+        }
+
+        case 'drop': {
+          // Soft wooden/tactile settling pop
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(420, now);
+          osc.frequency.exponentialRampToValueAtTime(160, now + 0.07);
+
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.075);
+          break;
+        }
+
+        case 'chime': {
+          // Resonant crystalline gap-closure chime (E5 -> B5 -> E6)
+          [659.25, 987.77, 1318.51].forEach((freq, idx) => {
+            const osc = this.ctx!.createOscillator();
+            const gain = this.ctx!.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+
+            gain.gain.setValueAtTime(0, now + idx * 0.06);
+            gain.gain.linearRampToValueAtTime(0.18, now + idx * 0.06 + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.35);
+
+            osc.connect(gain);
+            gain.connect(this.ctx!.destination);
+            osc.start(now + idx * 0.06);
+            osc.stop(now + idx * 0.06 + 0.38);
+          });
+          break;
+        }
+
         case 'pop':
         case 'click':
         default: {
@@ -173,4 +229,4 @@ class SoundEngine {
 }
 
 export const sound = new SoundEngine();
-export const playSound = (type: 'success' | 'snap' | 'pop' | 'jump' | 'slice' | 'correct' | 'click' | 'round') => sound.play(type);
+export const playSound = (type: 'success' | 'snap' | 'pop' | 'jump' | 'slice' | 'correct' | 'click' | 'round' | 'pickup' | 'drop' | 'chime') => sound.play(type);

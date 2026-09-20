@@ -25,13 +25,14 @@ export const SocraticCoachDrawer: React.FC<SocraticCoachDrawerProps> = ({
     {
       id: 'init-1',
       sender: 'coach',
-      text: `Hello ${student?.name || 'Student'}! I am your Socratic Math Coach by Sir Eugene Technologies. Ask me about equivalent fractions, finding common denominators, or proportional scaling. I will guide your thinking step-by-step!`,
+      text: `Hello ${student?.name || 'Student'}! I am Sir Eugene AI • Socratic Math Coach. Ask me about equivalent fractions, finding common denominators, 2D area multiplication, division measurement, or Ghanaian word problems. I will guide your thinking step-by-step!`,
       latex: `\\frac{a}{b} = \\frac{a \\times k}{b \\times k}`,
       timestamp: new Date(),
     },
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hintTier, setHintTier] = useState<1 | 2 | 3>(1);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToBottom = () => {
@@ -124,10 +125,10 @@ export const SocraticCoachDrawer: React.FC<SocraticCoachDrawerProps> = ({
     let streamSuccess = false;
     let accumulatedText = '';
 
-    // Step 1: Attempt Ultra-fast SSE Streaming with a 4s timeout
+    // Step 1: Attempt Ultra-fast SSE Streaming with an 8s timeout
     if (navigator.onLine) {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       try {
         const res = await fetch('/api/gemini/hint/stream', {
@@ -138,6 +139,7 @@ export const SocraticCoachDrawer: React.FC<SocraticCoachDrawerProps> = ({
             problemContext: currentProblemContext,
             studentInput: userText,
             studentLevel: student?.level || 'Form 1',
+            hintTier,
           }),
           signal: controller.signal,
         });
@@ -264,7 +266,7 @@ export const SocraticCoachDrawer: React.FC<SocraticCoachDrawerProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-black text-sm text-slate-800">Socratic Math Coach</h3>
+                <h3 className="font-black text-sm text-slate-800">Sir Eugene AI • Socratic Coach</h3>
                 <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200">
                   <Zap className="w-2.5 h-2.5 text-amber-500 fill-amber-500" /> Ultra-Fast AI
                 </span>
@@ -352,6 +354,46 @@ export const SocraticCoachDrawer: React.FC<SocraticCoachDrawerProps> = ({
           ))}
 
           <div ref={messagesEndRef} />
+        </div>
+
+        {/* Scaffolding Tier Selector Bar */}
+        <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2">
+          <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1">
+            <Zap className="w-3.5 h-3.5 text-amber-500" />
+            <span>Scaffolding Level:</span>
+          </span>
+          <div className="flex items-center gap-1 bg-white p-0.5 rounded-xl border border-slate-200 text-[10px] font-bold">
+            <button
+              type="button"
+              onClick={() => { setHintTier(1); playSound('click'); }}
+              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                hintTier === 1 ? 'bg-blue-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Tier 1: Conceptual provocation question"
+            >
+              Tier 1: Concept
+            </button>
+            <button
+              type="button"
+              onClick={() => { setHintTier(2); playSound('click'); }}
+              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                hintTier === 2 ? 'bg-blue-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Tier 2: Conversion / common denominator nudge"
+            >
+              Tier 2: Conversion
+            </button>
+            <button
+              type="button"
+              onClick={() => { setHintTier(3); playSound('click'); }}
+              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                hintTier === 3 ? 'bg-blue-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Tier 3: Concrete visual model guidance"
+            >
+              Tier 3: Visual Cue
+            </button>
+          </div>
         </div>
 
         {/* Quick Question Chips */}

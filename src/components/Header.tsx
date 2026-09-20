@@ -2,7 +2,12 @@ import React from 'react';
 import { StudentProfile } from '../types';
 import { MathView } from './MathView';
 import { 
-  Layers, 
+  Plus,
+  Minus,
+  X,
+  Divide,
+  Layers,
+  SlidersHorizontal,
   Ruler, 
   Grid3X3, 
   UtensilsCrossed, 
@@ -13,11 +18,22 @@ import {
   Sparkles,
   Flame,
   TrendingUp,
-  PenTool
+  PenTool,
+  Scale
 } from 'lucide-react';
 import { playSound } from '../utils/audio';
 
-export type WorkspaceMode = 'fractions' | 'numberline' | 'grid' | 'kitchen';
+export type WorkspaceMode = 
+  | 'gapstudio'
+  | 'addition'
+  | 'subtraction'
+  | 'multiplication'
+  | 'division'
+  | 'scanner'
+  | 'comparator'
+  | 'numberline'
+  | 'grid'
+  | 'kitchen';
 
 interface HeaderProps {
   activeMode: WorkspaceMode;
@@ -52,30 +68,76 @@ export const Header: React.FC<HeaderProps> = ({
   isMuted,
   onToggleMute,
 }) => {
-  const modes: { id: WorkspaceMode; title: string; icon: React.ReactNode; badge: string }[] = [
+  const modes: { id: WorkspaceMode; title: string; shortTitle: string; icon: React.ReactNode; badge: string }[] = [
     {
-      id: 'fractions',
-      title: 'Fraction Strips & Equivalence',
-      icon: <Layers className="w-4 h-4" />,
+      id: 'gapstudio',
+      title: 'Compare & Gap Studio',
+      shortTitle: 'Compare & Gap',
+      icon: <Scale className="w-3.5 h-3.5" />,
+      badge: '4 Routines',
+    },
+    {
+      id: 'addition',
+      title: 'Addition',
+      shortTitle: 'Addition',
+      icon: <Plus className="w-3.5 h-3.5" />,
+      badge: 'LCM',
+    },
+    {
+      id: 'subtraction',
+      title: 'Subtraction',
+      shortTitle: 'Subtraction',
+      icon: <Minus className="w-3.5 h-3.5" />,
+      badge: 'Gap',
+    },
+    {
+      id: 'multiplication',
+      title: 'Multiplication',
+      shortTitle: 'Multiplication',
+      icon: <X className="w-3.5 h-3.5" />,
+      badge: '2D Area',
+    },
+    {
+      id: 'division',
+      title: 'Division',
+      shortTitle: 'Division',
+      icon: <Divide className="w-3.5 h-3.5" />,
+      badge: 'Ratio',
+    },
+    {
+      id: 'scanner',
+      title: 'Wall Scanner',
+      shortTitle: 'Scanner',
+      icon: <Layers className="w-3.5 h-3.5" />,
+      badge: 'Edge-Lock',
+    },
+    {
+      id: 'comparator',
+      title: 'Comparator',
+      shortTitle: 'Comparator',
+      icon: <SlidersHorizontal className="w-3.5 h-3.5" />,
       badge: 'Snap Strips',
     },
     {
       id: 'numberline',
-      title: 'Jump Number Line & Rounding',
-      icon: <Ruler className="w-4 h-4" />,
-      badge: 'Jump Vectors',
+      title: 'Jump Line',
+      shortTitle: 'Jump Line',
+      icon: <Ruler className="w-3.5 h-3.5" />,
+      badge: 'Vectors',
     },
     {
       id: 'grid',
-      title: '100-Grid Percent & Ratio Scaler',
-      icon: <Grid3X3 className="w-4 h-4" />,
-      badge: 'GH₵ Market & Ratios',
+      title: '100-Grid',
+      shortTitle: '100-Grid',
+      icon: <Grid3X3 className="w-3.5 h-3.5" />,
+      badge: 'GH₵ %',
     },
     {
       id: 'kitchen',
-      title: 'Fair-Share Kitchen & Challenges',
-      icon: <UtensilsCrossed className="w-4 h-4" />,
-      badge: 'SHS 1-Min Cards',
+      title: 'Kitchen & SHS',
+      shortTitle: 'Kitchen',
+      icon: <UtensilsCrossed className="w-3.5 h-3.5" />,
+      badge: '1-Min',
     },
   ];
 
@@ -212,9 +274,9 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Mode Navigation Ribbon (Pill shaped container) */}
-      <div className="flex items-center justify-center w-full pt-0.5">
-        <nav id="workspace-mode-ribbon" className="flex bg-blue-700/50 rounded-full px-1 py-1 gap-1 overflow-x-auto no-scrollbar whitespace-nowrap max-w-full">
+      {/* Mode Navigation Ribbon (9 Interactive Engines) */}
+      <div className="flex items-center justify-start sm:justify-center w-full pt-0.5 overflow-hidden">
+        <nav id="workspace-mode-ribbon" className="flex items-center bg-blue-900/60 border border-blue-400/20 rounded-full px-1.5 py-1 gap-1 overflow-x-auto no-scrollbar whitespace-nowrap max-w-full shadow-inner">
           {modes.map((m) => {
             const isActive = activeMode === m.id;
             return (
@@ -225,14 +287,20 @@ export const Header: React.FC<HeaderProps> = ({
                   onSelectMode(m.id);
                   playSound('snap');
                 }}
-                className={`flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer shrink-0 ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer shrink-0 ${
                   isActive
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-white/80 hover:bg-blue-600/50 hover:text-white'
+                    ? 'bg-white text-blue-900 shadow-sm ring-1 ring-white/50 scale-[1.02]'
+                    : 'text-white/85 hover:bg-blue-600/50 hover:text-white'
                 }`}
+                title={m.title}
               >
-                {m.icon}
-                <span>{m.title.split('&')[0].trim()}</span>
+                <span className={isActive ? 'text-blue-600' : 'text-blue-200'}>{m.icon}</span>
+                <span>{m.title}</span>
+                <span className={`text-[9px] uppercase font-black px-1.5 py-0.2 rounded-full ${
+                  isActive ? 'bg-blue-100 text-blue-800' : 'bg-white/15 text-blue-100'
+                }`}>
+                  {m.badge}
+                </span>
               </button>
             );
           })}

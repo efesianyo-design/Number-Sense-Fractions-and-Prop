@@ -14,14 +14,15 @@ import { FractionStripsMode } from './components/modes/FractionStripsMode';
 import { JumpNumberLineMode } from './components/modes/JumpNumberLineMode';
 import { HundredGridMode } from './components/modes/HundredGridMode';
 import { FairShareKitchenMode } from './components/modes/FairShareKitchenMode';
+import { ComparisonGapStudioMode } from './components/modes/ComparisonGapStudioMode';
 import { sound, playSound } from './utils/audio';
 
 const STORAGE_KEY_STUDENT = 'math_studio_active_student_v1';
 const STORAGE_KEY_LOGS = 'math_studio_student_logs_v1';
 
 export default function App() {
-  // Active Workspace Mode
-  const [activeMode, setActiveMode] = useState<WorkspaceMode>('fractions');
+  // Active Workspace Mode (default to gapstudio)
+  const [activeMode, setActiveMode] = useState<WorkspaceMode>('gapstudio');
   const [liveLatex, setLiveLatex] = useState<string>('1 = \\frac{2}{2} = 100\\%');
 
   // Student Profile
@@ -201,7 +202,13 @@ export default function App() {
 
   const getModeTitle = () => {
     switch (activeMode) {
-      case 'fractions': return 'Fraction Strips & Equivalence';
+      case 'gapstudio': return 'Fraction Comparison, Gap-Filling & Word Problem Studio';
+      case 'addition': return 'Fraction Addition (Like & Unlike LCM)';
+      case 'subtraction': return 'Fraction Subtraction (Gap Solver)';
+      case 'multiplication': return 'Fraction Multiplication (2D Area)';
+      case 'division': return 'Fraction Division (Measurement & Ratio)';
+      case 'scanner': return 'Rainbow Fraction Wall & Train Scanner';
+      case 'comparator': return 'Snap Strips & Fraction Comparator Axis';
       case 'numberline': return 'Jump Number Line & Rounding';
       case 'grid': return '100-Grid Percent & Ratio Scaler';
       case 'kitchen': return 'Fair-Share Kitchen & Challenges';
@@ -235,12 +242,29 @@ export default function App() {
       />
 
       {/* Main Workspace with 2-Finger Pinch Zoom & Pan Support */}
-      <main id="main-workspace-area" className="flex-1 w-full relative overflow-hidden flex flex-col">
+      <main id="main-workspace-area" className="flex-1 min-h-0 w-full relative overflow-hidden flex flex-col">
         <WorkspaceZoomContainer>
-          {activeMode === 'fractions' && (
-            <FractionStripsMode
+          {activeMode === 'gapstudio' && (
+            <ComparisonGapStudioMode
               onLogActivity={handleLogActivity}
               onUpdateLiveLatex={setLiveLatex}
+              onOpenSocraticCoach={handleOpenSocraticWithContext}
+              student={student}
+            />
+          )}
+
+          {(activeMode === 'addition' ||
+            activeMode === 'subtraction' ||
+            activeMode === 'multiplication' ||
+            activeMode === 'division' ||
+            activeMode === 'scanner' ||
+            activeMode === 'comparator') && (
+            <FractionStripsMode
+              engineMode={activeMode}
+              onSelectMode={setActiveMode}
+              onLogActivity={handleLogActivity}
+              onUpdateLiveLatex={setLiveLatex}
+              onOpenSocraticCoach={handleOpenSocraticWithContext}
               student={student}
             />
           )}
@@ -249,6 +273,7 @@ export default function App() {
             <JumpNumberLineMode
               onLogActivity={handleLogActivity}
               onUpdateLiveLatex={setLiveLatex}
+              onOpenSocraticCoach={handleOpenSocraticWithContext}
               student={student}
             />
           )}
@@ -257,6 +282,7 @@ export default function App() {
             <HundredGridMode
               onLogActivity={handleLogActivity}
               onUpdateLiveLatex={setLiveLatex}
+              onOpenSocraticCoach={handleOpenSocraticWithContext}
               student={student}
             />
           )}

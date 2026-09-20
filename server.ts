@@ -1,14 +1,10 @@
 import express from "express";
 import path from "path";
-import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI, ThinkingLevel } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 
 dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3000;
@@ -35,10 +31,10 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", offlineReady: true });
 });
 
-// Socratic AI Coach Streaming endpoint (Ultra-low latency)
+// Socratic AI Coach Streaming endpoint (Ultra-low latency with gemini-3.7-flash)
 app.post("/api/gemini/hint/stream", async (req, res) => {
   try {
-    const { problemTitle, problemContext, studentInput, studentLevel } = req.body;
+    const { problemTitle, problemContext, studentInput, studentLevel, hintTier = 1, errorHistory = [] } = req.body;
 
     const ai = getGenAI();
     if (!ai) {
@@ -60,25 +56,28 @@ Your target audience is Ghanaian high school students (Form 1, Form 2, Form 3).
 Guidelines:
 1. Provide concise, friendly, rapid Socratic guiding hints (1 to 2 short sentences max).
 2. NEVER give away the numerical answer or compute the final arithmetic.
-3. Prompt them to think about relationships: equivalent fractions, common denominators, unit fractions, visual strips, percentages, or ratios.
-4. Keep the tone encouraging, culturally relatable, and mathematically precise.`;
+3. Adaptive Scaffolding Tiers:
+   - Tier 1: Conceptual provocation (e.g. "What happens to slice sizes when the denominator grows?").
+   - Tier 2: Representational nudge (e.g. "Consider what common denominator connects thirds and sixths").
+   - Tier 3: Concrete visual cue (e.g. "Look at the remaining gap on your track: how many 1/6 pieces fit that space?").
+4. Prompt them to think about relationships: equivalent fractions, common denominators, unit fractions, visual strips, percentages, or ratios.
+5. Keep the tone encouraging, culturally relatable, and mathematically precise.`;
 
     const prompt = `Problem: ${problemTitle || "Fraction / Ratio Challenge"}
 Context & Details: ${problemContext || "Student is working on finding equivalence or partitioning."}
 Student Level: ${studentLevel || "Form 1"}
+Scaffolding Tier Requested: Tier ${hintTier}
+Recent Errors/Struggles: ${errorHistory.length > 0 ? errorHistory.join("; ") : "None reported"}
 Student Question: ${studentInput || "I need a hint."}
 
-Provide a quick 1-2 sentence Socratic hint:`;
+Provide a quick 1-2 sentence Socratic hint at Tier ${hintTier} level:`;
 
     const stream = await ai.models.generateContentStream({
       model: "gemini-3.7-flash",
       contents: prompt,
       config: {
         systemInstruction,
-        temperature: 0.4,
-        thinkingConfig: {
-          thinkingLevel: ThinkingLevel.LOW,
-        },
+        temperature: 0.3,
       },
     });
 
@@ -138,10 +137,7 @@ Please provide a short Socratic guiding hint without revealing the numeric solut
       contents: prompt,
       config: {
         systemInstruction,
-        temperature: 0.4,
-        thinkingConfig: {
-          thinkingLevel: ThinkingLevel.LOW,
-        },
+        temperature: 0.3,
       },
     });
 
@@ -153,6 +149,61 @@ Please provide a short Socratic guiding hint without revealing the numeric solut
       error: error.message || "Failed to generate AI hint",
       isFallback: true,
     });
+  }
+});
+
+// AI Word Problem Generator endpoint for Fair Share Kitchen & Fraction Studio
+app.post("/api/gemini/generate-word-problem", async (req, res) => {
+  try {
+    const { theme, level, foodItem, sliceCount } = req.body;
+    const ai = getGenAI();
+
+    if (!ai) {
+      return res.status(503).json({
+        error: "Gemini API key not configured",
+        isFallback: true,
+      });
+    }
+
+    const systemInstruction = `You are a Ghanaian Mathematics Curriculum Specialist crafting culturally authentic, engaging fair-share fraction word problems for SHS / JHS students (Form 1 to Form 3).
+Output ONLY valid JSON with keys:
+{
+  "title": string,
+  "story": string,
+  "foodItem": "pizza" | "chocolate" | "bread" | "bofrot" | "sobolo" | "pie",
+  "totalSlices": number,
+  "allocations": [
+    {"person": string, "slices": number, "color": string}
+  ],
+  "question": string,
+  "targetFraction": {"num": number, "den": number},
+  "explanation": string,
+  "latex": string
+}`;
+
+    const prompt = `Generate a realistic Ghanaian fair-share fraction word problem.
+Theme/Context: ${theme || "Sharing street snacks or market food in Ghana (e.g. Accra Sugar Bread, Kelewele, Bofrot, Sobolo, Pizza, Chocolate)"}
+Form Level: ${level || "Form 1"}
+Food Item: ${foodItem || "any"}
+Total Slices / Portions: ${sliceCount || "between 6 and 12"}
+
+Respond ONLY with valid JSON.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.7-flash",
+      contents: prompt,
+      config: {
+        systemInstruction,
+        temperature: 0.4,
+        responseMimeType: "application/json",
+      },
+    });
+
+    const parsed = JSON.parse(response.text || "{}");
+    return res.json(parsed);
+  } catch (error: any) {
+    console.error("Generate word problem error:", error);
+    return res.status(500).json({ error: error.message });
   }
 });
 

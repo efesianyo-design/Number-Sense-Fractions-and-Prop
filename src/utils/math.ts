@@ -57,6 +57,7 @@ export const FRACTION_PALETTE: Record<number, { bg: string; border: string; text
   8: { bg: 'bg-[#3B82F6]', border: 'border-[#3B82F6]', text: 'text-[#1D4ED8]', lightBg: 'bg-[#DBEAFE]', hover: 'hover:bg-[#BFDBFE]', solidBg: '#3B82F6' },
   10: { bg: 'bg-[#6366F1]', border: 'border-[#6366F1]', text: 'text-[#4338CA]', lightBg: 'bg-[#E0E7FF]', hover: 'hover:bg-[#C7D2FE]', solidBg: '#6366F1' },
   12: { bg: 'bg-[#A855F7]', border: 'border-[#A855F7]', text: 'text-[#7E22CE]', lightBg: 'bg-[#F3E8FF]', hover: 'hover:bg-[#E9D5FF]', solidBg: '#A855F7' },
+  16: { bg: 'bg-[#EC4899]', border: 'border-[#EC4899]', text: 'text-[#BE185D]', lightBg: 'bg-[#FCE7F3]', hover: 'hover:bg-[#FBCFE8]', solidBg: '#EC4899' },
 };
 
-export const DENOMINATORS = [2, 3, 4, 5, 6, 8, 10, 12] as const;
+export const DENOMINATORS = [2, 3, 4, 5, 6, 8, 10, 12, 16] as const;

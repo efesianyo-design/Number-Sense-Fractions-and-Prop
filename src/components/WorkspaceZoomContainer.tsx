@@ -97,7 +97,7 @@ export const WorkspaceZoomContainer: React.FC<WorkspaceZoomContainerProps> = ({
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
-      className={`relative w-full h-full overflow-hidden select-none bg-slate-950 flex flex-col ${className}`}
+      className={`relative w-full h-full min-h-0 overflow-hidden select-none bg-slate-950 flex flex-col ${className}`}
     >
       {/* Floating Canvas Zoom & Pan Control Dock */}
       <div
@@ -141,7 +141,7 @@ export const WorkspaceZoomContainer: React.FC<WorkspaceZoomContainerProps> = ({
       {/* Scalable & Pannable Interactive Canvas Layer */}
       <div
         id="workspace-content-layer"
-        className="w-full h-full flex-1 flex flex-col origin-top transition-transform duration-75"
+        className="w-full h-full min-h-0 flex-1 flex flex-col origin-top transition-transform duration-75 overflow-hidden"
         style={{
           transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
         }}
